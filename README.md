@@ -12,10 +12,10 @@ pip install -r requirements.txt
 
 ## Usage
 
-Run the Flask application and send a PDF to the `/convert` endpoint.
+Run the FastAPI application with Uvicorn and send a PDF to the `/convert` endpoint.
 
 ```bash
-python app.py
+uvicorn app:app --reload
 ```
 
 You can convert a PDF using `curl`:

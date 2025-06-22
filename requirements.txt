@@ -1,4 +1,5 @@
-Flask
+fastapi
+uvicorn
 pytesseract
 pdf2image
 PyMuPDF

@@ -1,9 +1,10 @@
 import io
-from flask import Flask, request, send_file, jsonify
+from fastapi import FastAPI, File, UploadFile, HTTPException
+from fastapi.responses import StreamingResponse
 import fitz  # PyMuPDF
 from ebooklib import epub
 
-app = Flask(__name__)
+app = FastAPI()
 
 
 def pdf_to_epub(pdf_bytes):
@@ -35,20 +36,19 @@ def pdf_to_epub(pdf_bytes):
     return result
 
 
-@app.route("/convert", methods=["POST"])
-def convert():
-    if "pdf" not in request.files:
-        return jsonify({"error": "No PDF file uploaded"}), 400
-    uploaded = request.files["pdf"]
-    epub_data = pdf_to_epub(uploaded.read())
-    return send_file(
+@app.post("/convert")
+async def convert(pdf: UploadFile = File(...)):
+    if pdf.content_type != "application/pdf":
+        raise HTTPException(status_code=400, detail="Invalid file type")
+    epub_data = pdf_to_epub(await pdf.read())
+    return StreamingResponse(
         epub_data,
-        as_attachment=True,
-        download_name="output.epub",
-        mimetype="application/epub+zip",
+        media_type="application/epub+zip",
+        headers={"Content-Disposition": "attachment; filename=output.epub"},
     )
 
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    import uvicorn
+    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
 
